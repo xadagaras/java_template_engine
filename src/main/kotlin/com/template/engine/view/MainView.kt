@@ -24,7 +24,7 @@ class MainView : View("Java Template Engine") {
                     field("Project Folder") {
 
                         textfield().bind(model.projectDirectory)
-                        button("open") {
+                        button("Choose Project Folder") {
                             action {
                                 val directory = chooseDirectory("Select Target Directory")
                                 model.projectDirectory.value = "${directory?.absolutePath}"

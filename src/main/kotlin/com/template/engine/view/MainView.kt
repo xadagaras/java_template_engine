@@ -10,7 +10,10 @@ import java.io.File
 class MainView : View("Java Template Engine") {
 
     val controller: TemplateEngineController by inject()
-    val templateNames = FXCollections.observableArrayList<String>(getTemplateNames())
+    var templates: MutableList<String> = mutableListOf()
+    var templateNames = FXCollections.observableList<String>(templates)
+
+
 
     val model = TemplateViewModel()
 
@@ -33,6 +36,17 @@ class MainView : View("Java Template Engine") {
                         }
 
                     }
+                    field("Template Directory") {
+                        textfield().bind(model.templateDirectory)
+                        button("Choose Template Folder") {
+                            action {
+                                val directory = chooseDirectory("Select Target Directory")
+                                model.templateDirectory.value = "${directory?.absolutePath}"
+                                templateNames.addAll(getTemplateNames(model))
+
+                            }
+                        }
+                    }
                     field("Template Name") {
                         combobox<String> {
                             items = templateNames
@@ -40,6 +54,7 @@ class MainView : View("Java Template Engine") {
                             bind(model.templateName)
 
                         }
+
                     }
                 }
                 fieldset("Domain") {
@@ -60,11 +75,13 @@ class MainView : View("Java Template Engine") {
 
     }
 
-    fun getTemplateNames() : List<String> {
+    fun getTemplateNames(model: TemplateViewModel?) : List<String> {
         val templateNames: MutableList<String> = mutableListOf()
-        File("./template").walk().forEach { file ->
-            if(file.isDirectory && file.name != "template") {
-                templateNames.add(file.name)
+        if(model?.templateDirectory?.value != null) {
+            File(model.templateDirectory.value).walk().forEach { file ->
+                if (file.isDirectory && file.name != "template") {
+                    templateNames.add(file.name)
+                }
             }
         }
         return templateNames

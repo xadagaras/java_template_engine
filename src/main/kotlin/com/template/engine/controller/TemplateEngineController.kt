@@ -12,17 +12,17 @@ import java.time.LocalDateTime
 class TemplateEngineController : Controller() {
 
     fun generateCode(model: TemplateViewModel) {
-        var baseDirectory = File("./template/" + model.templateName.value)
+        var templateDirectory = File(model.templateDirectory.value)
 
         val cfg = Configuration(Configuration.VERSION_2_3_23)
-        cfg.setDirectoryForTemplateLoading(File("./template/${model.templateName.value}"))
+        cfg.setDirectoryForTemplateLoading(File("${model.templateDirectory.value}/${model.templateName.value}"))
         cfg.defaultEncoding = "UTF-8"
         cfg.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
         cfg.logTemplateExceptions = false
 
-        if(baseDirectory.isDirectory) {
-            baseDirectory.walk().forEach { file ->
-                if(file.name != baseDirectory.name) {
+        if(templateDirectory.isDirectory) {
+            templateDirectory.walk().forEach { file ->
+                if(file.name != templateDirectory.name) {
                     var packageName = model.packageName.value.toLowerCase()
                     println("Working on file ${file.name}")
 

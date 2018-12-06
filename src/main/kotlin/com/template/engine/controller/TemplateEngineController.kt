@@ -1,9 +1,9 @@
 package com.template.engine.controller
 
 import com.template.engine.model.TemplateViewModel
-import tornadofx.*
+import tornadofx.Controller
 import java.io.File
-import java.io.FileOutputStream
+import java.time.LocalDateTime
 
 class TemplateEngineController : Controller() {
 
@@ -27,9 +27,15 @@ class TemplateEngineController : Controller() {
 
                         // first step, replace all placeholders
                         var currentLine = it
-
-                        currentLine = replaceFilePrefix(currentLine, model.domainName.value)
-                        currentLine = replacePackageName(currentLine, packageName)
+                        val domainName = model.domainName.value
+                        if(domainName.isNotBlank()) {
+                            currentLine = replaceFilePrefix(currentLine, domainName)
+                            currentLine = replacePackageName(currentLine, packageName)
+                            currentLine = replaceFilePrefixUpper(currentLine, domainName)
+                            currentLine = replaceFilePrefixLower(currentLine, domainName)
+                            currentLine = replaceFilePrefixLowerCapital(currentLine, domainName)
+                            currentLine = generateSerialVersionId(currentLine)
+                        }
                         if(notHeaderLine(currentLine)) {
                             newFile += "${currentLine}\n"
                         }
@@ -57,6 +63,19 @@ class TemplateEngineController : Controller() {
         }
     }
 
+    private fun replaceFilePrefixUpper(currentLine: String, domainName: String): String {
+        return currentLine.replace("{{FilePrefixUpper}}", domainName.toUpperCase())
+    }
+
+    private fun replaceFilePrefixLower(currentLine: String, domainName: String): String {
+        return currentLine.replace("{{FilePrefixLower}}", domainName.toLowerCase())
+    }
+
+    private fun replaceFilePrefixLowerCapital(currentLine: String, domainName: String): String {
+
+        return currentLine.replace("{{FilePrefixLowerCapital}}", domainName.decapitalize())
+    }
+
     private fun notHeaderLine(line: String) : Boolean{
         return !(line.startsWith("#file") || line.startsWith("#module"))
     }
@@ -65,6 +84,22 @@ class TemplateEngineController : Controller() {
         val replaced = line.replace("{{FilePrefix}}", domainName)
         //println(replaced)
         return replaced
+    }
+
+    private fun generateSerialVersionId(currentLine: String): String {
+        val currentDate = LocalDateTime.now()
+        val year = currentDate.year
+        val month = currentDate.monthValue
+        val day = currentDate.dayOfMonth
+        val hour = currentDate.hour
+        var hourString: String
+        if(hour < 10) {
+            hourString = "0${hour}"
+        } else {
+            hourString = "${hour}"
+        }
+        val minute = currentDate.minute
+        return currentLine.replace("{{SerialVersionId}}", "${year}${month}${day}${hourString}${minute}L")
     }
 
     private fun replacePackageName(line: String, packageName: String) : String {

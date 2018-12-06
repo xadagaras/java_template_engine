@@ -1,6 +1,5 @@
 package com.template.engine.view
 
-import com.template.engine.model.Template
 import com.template.engine.controller.TemplateEngineController
 import com.template.engine.model.TemplateViewModel
 import javafx.collections.FXCollections

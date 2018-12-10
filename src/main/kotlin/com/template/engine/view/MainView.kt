@@ -79,7 +79,8 @@ class MainView : View("Java Template Engine") {
         val templateNames: MutableList<String> = mutableListOf()
         if(model?.templateDirectory?.value != null) {
             File(model.templateDirectory.value).walk().forEach { file ->
-                if (file.isDirectory && file.name != "template") {
+                val parentDirectoryName = model.templateDirectory.value.substring(model.templateDirectory.value.lastIndexOf("/") + 1)
+                if (file.isDirectory && file.name != parentDirectoryName) {
                     templateNames.add(file.name)
                 }
             }

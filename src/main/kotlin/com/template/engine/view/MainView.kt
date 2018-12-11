@@ -2,16 +2,11 @@ package com.template.engine.view
 
 import com.template.engine.controller.TemplateEngineController
 import com.template.engine.model.TemplateViewModel
-import javafx.collections.FXCollections
-import javafx.scene.layout.Priority
 import tornadofx.*
-import java.io.File
 
 class MainView : View("Java Template Engine") {
 
     val controller: TemplateEngineController by inject()
-    var templates: MutableList<String> = mutableListOf()
-    var templateNames = FXCollections.observableList<String>(templates)
 
 
 
@@ -26,8 +21,11 @@ class MainView : View("Java Template Engine") {
                 fieldset("Project") {
                     field("Project Folder") {
 
-                        textfield().bind(model.projectDirectory)
+                        textfield() {
+                            tooltip("Select the target directory where the code files should be saved.")
+                        }.bind(model.projectDirectory)
                         button("Choose Project Folder") {
+                            tooltip("Select the target directory where the code files should be saved.")
                             action {
                                 val directory = chooseDirectory("Select Target Directory")
                                 model.projectDirectory.value = "${directory?.absolutePath}"
@@ -37,32 +35,30 @@ class MainView : View("Java Template Engine") {
 
                     }
                     field("Template Directory") {
-                        textfield().bind(model.templateDirectory)
+                        textfield(){
+                            tooltip("Select the directory where the template file(s) are located.")
+                        }.bind(model.templateDirectory)
                         button("Choose Template Folder") {
+                            tooltip("Select the directory where the template file(s) are located.")
                             action {
                                 val directory = chooseDirectory("Select Target Directory")
                                 model.templateDirectory.value = "${directory?.absolutePath}"
-                                templateNames.addAll(getTemplateNames(model))
-
                             }
                         }
-                    }
-                    field("Template Name") {
-                        combobox<String> {
-                            items = templateNames
-                            vgrow = Priority.ALWAYS
-                            bind(model.templateName)
-
-                        }
-
                     }
                 }
                 fieldset("Domain") {
                     field("Name") {
-                        textfield().bind(model.domainName)
+                        textfield(){
+                            tooltip("Specify the prefix that should be used for the classes. I.e. if you want a class to be named PetStore and Store" +
+                                    "is defined fixed inside of the template, you need to specify Pet in this field.")
+                        }.bind(model.domainName)
                     }
                     field("Package") {
-                        textfield().bind(model.packageName)
+                        textfield(){
+                            tooltip("Specify the relative package name that should be used by the generated class. The length " +
+                                    "of the package name is defined by the templates itself.")
+                        }.bind(model.packageName)
                     }
                 }
                 button("Generate Code") {
@@ -73,18 +69,5 @@ class MainView : View("Java Template Engine") {
             }
         }
 
-    }
-
-    fun getTemplateNames(model: TemplateViewModel?) : List<String> {
-        val templateNames: MutableList<String> = mutableListOf()
-        if(model?.templateDirectory?.value != null) {
-            File(model.templateDirectory.value).walk().forEach { file ->
-                val parentDirectoryName = model.templateDirectory.value.substring(model.templateDirectory.value.lastIndexOf("/") + 1)
-                if (file.isDirectory && file.name != parentDirectoryName) {
-                    templateNames.add(file.name)
-                }
-            }
-        }
-        return templateNames
     }
 }

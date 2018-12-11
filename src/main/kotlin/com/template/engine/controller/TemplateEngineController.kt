@@ -15,13 +15,13 @@ class TemplateEngineController : Controller() {
         var templateDirectory = File(model.templateDirectory.value)
 
         val cfg = Configuration(Configuration.VERSION_2_3_23)
-        cfg.setDirectoryForTemplateLoading(File("${model.templateDirectory.value}/${model.templateName.value}"))
+        cfg.setDirectoryForTemplateLoading(templateDirectory)
         cfg.defaultEncoding = "UTF-8"
         cfg.templateExceptionHandler = TemplateExceptionHandler.RETHROW_HANDLER
         cfg.logTemplateExceptions = false
 
         if(templateDirectory.isDirectory) {
-            templateDirectory.walk().forEach { file ->
+            templateDirectory.walk().maxDepth(1).forEach { file ->
                 if(file.name != templateDirectory.name) {
                     var packageName = model.packageName.value.toLowerCase()
                     println("Working on file ${file.name}")
@@ -32,13 +32,16 @@ class TemplateEngineController : Controller() {
                         val filename = getFilename(file, model)
                         val outputFile = File("${model.projectDirectory.value}/${filename}").also {
                             it.parentFile.mkdirs()
-                        }.outputStream()
-                        val template = cfg.getTemplate(file.name)
-                        val out = OutputStreamWriter(outputFile)
-                        template.process(templateVars, out)
-                        out.close()
+                        }
+                        if(!outputFile.exists()) {
+
+                            val template = cfg.getTemplate(file.name)
+                            val out = OutputStreamWriter(outputFile.outputStream())
+                            template.process(templateVars, out)
+                            out.close()
+                            println("${model.projectDirectory.value}/${filename} generated")
+                        }
                     }
-                    println("Class ${file.name} generated")
                 }
             }
         }
@@ -53,11 +56,11 @@ class TemplateEngineController : Controller() {
             filename = replacePackageName(filename, model.packageName.value.replace(".", "/"))
             filename = filename.replace("-->", "")
         }
-        return filename
+        return filename.trim()
     }
 
     private fun replaceFilePrefix(line: String, domainName: String) : String {
-        val replaced = line.replace("{{FilePrefix}}", domainName)
+        val replaced = line.replace("{{DomainName}}", domainName)
         //println(replaced)
         return replaced
     }
